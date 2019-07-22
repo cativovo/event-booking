@@ -1,12 +1,11 @@
 const express = require('express');
 const graphqlHttp = require('express-graphql');
 const { buildSchema } = require('graphql');
+const Event = require('./models/event');
 
 const app = express();
 
 app.use(express.json());
-
-const events = [];
 
 app.use(
   '/graphql',
@@ -41,16 +40,25 @@ app.use(
         }
     `),
     rootValue: {
-      events: () => events,
-      createEvent: ({ eventInput }) => {
-        const event = {
-          _id: Math.random().toString(),
-          ...eventInput,
-        };
+      events: async () => {
+        try {
+          return Event.find();
+        } catch (e) {
+          throw e;
+        }
+      },
+      createEvent: async ({ eventInput: { date, price, ...rest } }) => {
+        const event = new Event({
+          date: new Date(date),
+          price: parseFloat(price, 10),
+          ...rest,
+        });
 
-        events.push(event);
-
-        return event;
+        try {
+          return event.save();
+        } catch (e) {
+          throw e;
+        }
       },
     },
     graphiql: true,

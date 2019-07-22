@@ -1,16 +1,15 @@
-const path = require('path');
-const fs = require('fs');
+require('./dotenv');
 const app = require('./app');
-
-const envPath = path.join(__dirname, '..', 'config', 'event-booking.env');
-
-if (fs.existsSync(envPath)) {
-  require('dotenv').config({ path: envPath });
-}
+const connect = require('./db/mongoose');
 
 const { PORT } = process.env;
 
-app.listen(PORT, () => {
+connect
+  .then(() => {
+    app.listen(PORT, () => {
+      // eslint-disable-next-line no-console
+      console.log(`Listening on port ${PORT}`);
+    });
+  })
   // eslint-disable-next-line no-console
-  console.log(`Listening on port ${PORT}`);
-});
+  .catch(e => console.log(e));
