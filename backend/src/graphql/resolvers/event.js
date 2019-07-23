@@ -1,5 +1,6 @@
 const Event = require('../../models/event');
 const User = require('../../models/user');
+const checkAuth = require('../../utils/checkAuth');
 
 const query = {
   events: () => Event.find().populate({
@@ -11,8 +12,9 @@ const query = {
 };
 
 const mutation = {
-  createEvent: async ({ eventInput: { date, price, ...rest } }) => {
-    const user = await User.findById('5d35e3f1ffbb1b503d7cbf83'); // dummy user id
+  createEvent: async ({ eventInput: { date, price, ...rest } }, { isAuth, userId }) => {
+    checkAuth(isAuth);
+    const user = await User.findById(userId);
     if (!user) {
       throw new Error('User not found');
     }
