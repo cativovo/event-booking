@@ -1,9 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 
 const LoaderContainer = styled.div`
-  height: 100vh;
-  position: relative;
+  height: ${({ children: { props: fullScreen } }) => (fullScreen ? '100vh' : '100%')};
+  position: ${({ children: { props: fullScreen } }) => (fullScreen ? 'fixed' : 'relative')};
+  top: 0;
   width: 100vw;
 `;
 
@@ -25,10 +27,18 @@ const StyledLoader = styled.img`
   top: 50%;
   width: 10rem;
 `;
-const Loader = () => (
+const Loader = ({ fullScreen }) => (
   <LoaderContainer>
-    <StyledLoader src="/img/loader.svg" alt="loading..." />
+    <StyledLoader fullScreen={fullScreen} src="/img/loader.svg" alt="loading..." />
   </LoaderContainer>
 );
 
 export default Loader;
+
+Loader.defaultProps = {
+  fullScreen: true,
+};
+
+Loader.propTypes = {
+  fullScreen: PropTypes.bool,
+};

@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
-import WithAuth from '../context/WithAuth';
+import authContext from '../context/authContext';
 
 const StyledNav = styled.nav`
   align-items: center;
@@ -67,37 +66,32 @@ const StyledNav = styled.nav`
   }
 `;
 
-const MainNav = ({ token, setToken }) => (
-  <StyledNav>
-    <NavLink to="/" exact>
-      Events
-    </NavLink>
-    {token ? (
-      <>
-        <NavLink to="/booking">Booking</NavLink>
-        <button
-          type="button"
-          onClick={() => {
-            setToken(null);
-            localStorage.removeItem('token');
-          }}
-        >
-          Logout
-        </button>
-      </>
-    ) : (
-      <NavLink to="/login">Login</NavLink>
-    )}
-  </StyledNav>
-);
+const MainNav = () => {
+  const { token, setToken } = useContext(authContext);
 
-export default WithAuth(MainNav);
-
-MainNav.defaultProps = {
-  token: null,
+  return (
+    <StyledNav>
+      <NavLink to="/" exact>
+        Events
+      </NavLink>
+      {token ? (
+        <>
+          <NavLink to="/booking">Booking</NavLink>
+          <button
+            type="button"
+            onClick={() => {
+              setToken(null);
+              localStorage.removeItem('token');
+            }}
+          >
+            Logout
+          </button>
+        </>
+      ) : (
+        <NavLink to="/login">Login</NavLink>
+      )}
+    </StyledNav>
+  );
 };
 
-MainNav.propTypes = {
-  token: PropTypes.string,
-  setToken: PropTypes.func.isRequired,
-};
+export default MainNav;

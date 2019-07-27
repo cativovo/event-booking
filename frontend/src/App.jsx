@@ -6,9 +6,10 @@ import AppRouter from './routers/AppRouter';
 const theme = {
   colorMain: '#00b894',
   colorSecondary: '#7DFFE5',
+  colorTertiary: '#3867d6',
   colorBlack: '#2d3436',
   colorWhite: '#fff',
-  colorDanger: '#c23616',
+  colorDanger: '#ff4d4d',
   logoBackground: '#B35634',
 };
 
@@ -33,6 +34,7 @@ const GlobalStyle = createGlobalStyle`
     line-height: 2;
   }
 
+
   a {
     text-decoration: none;
   }
@@ -40,16 +42,17 @@ const GlobalStyle = createGlobalStyle`
   button {
     cursor: pointer;
   }
+
 `;
 
 const App = () => (
-  <AuthProvider>
-    <ThemeProvider theme={theme}>
-      <>
-        <GlobalStyle />
+  <ThemeProvider theme={theme}>
+    <>
+      <GlobalStyle />
+      <AuthProvider>
         <AppRouter />
-      </>
-    </ThemeProvider>
-  </AuthProvider>
+      </AuthProvider>
+    </>
+  </ThemeProvider>
 );
 export default App;
