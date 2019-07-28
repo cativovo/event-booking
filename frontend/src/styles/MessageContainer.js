@@ -8,34 +8,6 @@ const Message = styled.p`
   .error {
     color: ${({ theme }) => theme.colorDanger};
   }
-
-  .auth {
-    display: inline-block;
-    margin-top: 2rem;
-
-    @keyframes authenticating {
-      0% {
-        content: '';
-      }
-
-      80% {
-        content: '.';
-      }
-
-      90% {
-        content: '..';
-      }
-
-      100% {
-        content: '...';
-      }
-    }
-
-    &::after {
-      animation: authenticating 1.5s infinite linear;
-      content: '';
-    }
-  }
 `;
 
 export default Message;

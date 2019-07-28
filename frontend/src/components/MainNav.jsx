@@ -67,21 +67,22 @@ const StyledNav = styled.nav`
 `;
 
 const MainNav = () => {
-  const { token, setToken } = useContext(authContext);
+  const { setTokenAndUserId, isAuthenticated } = useContext(authContext);
 
   return (
     <StyledNav>
       <NavLink to="/" exact>
         Events
       </NavLink>
-      {token ? (
+      {isAuthenticated ? (
         <>
           <NavLink to="/booking">Booking</NavLink>
           <button
             type="button"
             onClick={() => {
-              setToken(null);
+              setTokenAndUserId(null, null);
               localStorage.removeItem('token');
+              localStorage.removeItem('userId');
             }}
           >
             Logout

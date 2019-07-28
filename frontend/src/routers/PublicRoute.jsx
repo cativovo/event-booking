@@ -5,12 +5,12 @@ import Header from '../components/Header';
 import authContext from '../context/authContext';
 
 const PublicRoute = ({ component: Component, location, ...props }) => {
-  const { token } = useContext(authContext);
+  const { isAuthenticated } = useContext(authContext);
 
   return (
     <Route
       render={(routeProps) => {
-        if (location.pathname === '/login' && token) {
+        if (location.pathname === '/login' && isAuthenticated) {
           return <Redirect to="/" />;
         }
 

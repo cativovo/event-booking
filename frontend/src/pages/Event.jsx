@@ -2,13 +2,16 @@
 import React, { useEffect, useState, useContext } from 'react';
 import styled from 'styled-components';
 import query from '../utils/query';
-import InputGroup from '../styles/InputGroup';
 import HeadingPrimary from '../styles/HeadingPrimary';
 import StyledButton from '../styles/StyledButton';
-import StyledForm from '../styles/StyledForm';
+import CreateEventForm from '../components/CreateEventForm';
 import Modal from '../components/Modal';
+import EventsList from '../components/EventsList';
+import ButtonWithSpinner from '../components/ButtonWithSpinner';
 import MessageContainer from '../styles/MessageContainer';
+import Loader from '../components/Loader';
 import authContext from '../context/authContext';
+import objectToGraphqlInput from '../utils/objectToGraphqlInput';
 
 const StyledEvent = styled.div``;
 const EventButtons = styled.div`
@@ -26,6 +29,7 @@ const Event = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
   const { token } = useContext(authContext);
 
   useEffect(() => {
@@ -33,9 +37,13 @@ const Event = () => {
         events {
             _id
             title
+            creator {
+              _id
+            }
         }
     }`).then(({ data }) => {
       setEvents(data.events);
+      setIsFetching(false);
     });
   }, []);
 
@@ -48,7 +56,7 @@ const Event = () => {
     }
   };
 
-  const handleCreateEvent = (e) => {
+  const handleCreateEvent = async (e) => {
     e.preventDefault();
     setErrorMessage(null);
     const {
@@ -63,31 +71,38 @@ const Event = () => {
 
       setIsSaving(true);
 
-      query(
+      const event = {
+        title: title.value,
+        description: description.value,
+        price: parseFloat(price.value, 10),
+        date: date.value,
+      };
+
+      const { errors, data } = await query(
         `
       mutation {
-          createEvent(eventInput: {title: "${title.value}", description: "${
-  description.value
-}", price: ${parseFloat(price.value, 10)}, date: "${date.value}"}) {
+          createEvent(eventInput: ${objectToGraphqlInput(event)}) {
             _id
             title
             description
             price
             date
+            creator {
+              _id
+            }
           }
         }
       `,
         token,
-      ).then((res) => {
-        const { errors, data } = res;
-        setIsSaving(false);
+      );
+      setIsSaving(false);
 
-        if (errors) {
-          throw errors[0].message;
-        }
+      if (errors) {
+        throw errors[0].message;
+      }
 
-        setEvents([...events, data.createEvent]);
-      });
+      setEvents([...events, data.createEvent]);
+      handleModalInteraction();
     } catch (message) {
       setErrorMessage(message);
     }
@@ -96,53 +111,39 @@ const Event = () => {
   return (
     <StyledEvent>
       <HeadingPrimary>Event</HeadingPrimary>
-      {token && (
-        <StyledButton type="button" primary onClick={handleModalInteraction}>
-          Create event
-        </StyledButton>
-      )}
-
-      <ul>
-        {events.map(({ _id, title }) => (
-          <li key={_id}>{title}</li>
-        ))}
-      </ul>
-      <Modal title="Create Event" isOpen={isModalOpen} onRequestClose={handleModalInteraction}>
+      {isFetching ? (
+        <Loader fullScreen />
+      ) : (
         <>
-          <StyledForm id="create-event-form" onSubmit={handleCreateEvent}>
-            <div className="form-group">
+          {token && (
+            <StyledButton type="button" primary onClick={handleModalInteraction}>
+              Create event
+            </StyledButton>
+          )}
+
+          <EventsList events={events}/>
+          <Modal title="Create Event" isOpen={isModalOpen}>
+            <>
               <MessageContainer>
                 {errorMessage && <span className="error">{errorMessage}</span>}
-                {isSaving && <span className="auth">Saving</span>}
+                {isSaving && <span className="auth">Saving...</span>}
               </MessageContainer>
-              <InputGroup>
-                <input type="text" id="title" placeholder="Title" name="title" />
-                <label htmlFor="title">Title</label>
-              </InputGroup>
-              <InputGroup>
-                <input type="number" id="price" placeholder="Price" name="price" step="0.01" />
-                <label htmlFor="price">Price</label>
-              </InputGroup>
-              <InputGroup>
-                <input type="date" id="date" name="date" />
-                <label htmlFor="date">Date</label>
-              </InputGroup>
-              <InputGroup>
-                <textarea id="description" rows="5" placeholder="Description" name="description" />
-                <label htmlFor="Description">Description</label>
-              </InputGroup>
-            </div>
-          </StyledForm>
-          <EventButtons>
-            <StyledButton type="submit" form="create-event-form" primary disabled={isSaving}>
-              Save
-            </StyledButton>
-            <StyledButton type="button" danger onClick={handleModalInteraction} disabled={isSaving}>
-              Cancel
-            </StyledButton>
-          </EventButtons>
+              <CreateEventForm handleSubmit={handleCreateEvent}/>
+              <EventButtons>
+                <ButtonWithSpinner type="submit" form="create-event-form" primary isLoading={isSaving} buttonText="Save" />
+                <StyledButton
+                  type="button"
+                  danger
+                  onClick={handleModalInteraction}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </StyledButton>
+              </EventButtons>
+            </>
+          </Modal>
         </>
-      </Modal>
+      )}
     </StyledEvent>
   );
 };

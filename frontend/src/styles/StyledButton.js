@@ -25,7 +25,7 @@ const StyledButton = styled.button`
 
   &:disabled {
     background-color: ${({ theme, danger, primary }) => {
-    const lightenPercentage = 0.5;
+    const lightenPercentage = 0.2;
 
     if (danger) {
       return lighten(lightenPercentage, theme.colorDanger);

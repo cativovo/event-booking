@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
-import WithAuth from '../context/WithAuth';
 import HeadingPrimary from '../styles/HeadingPrimary';
 import query from '../utils/query';
 import InputGroup from '../styles/InputGroup';
 import StyledForm from '../styles/StyledForm';
-import StyledButton from '../styles/StyledButton';
+import ButtonWithSpinner from '../components/ButtonWithSpinner';
 import Message from '../styles/MessageContainer';
+import authContext from '../context/authContext';
 
 const StyledLogin = styled.div`
   position: relative;
@@ -28,11 +27,12 @@ const StyledLogin = styled.div`
   }
 `;
 
-const Login = ({ setToken }) => {
+const Login = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const { setTokenAndUserId } = useContext(authContext);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
     setIsAuthenticating(true);
@@ -41,26 +41,27 @@ const Login = ({ setToken }) => {
       password: { value: password },
     } = e.target;
 
-    query(`
+    const response = await query(`
       query{
           login(email:"${email}", password:"${password}") {
               token
               userId
           }
       }
-    `).then((res) => {
-      const { errors, data } = res;
-      setIsAuthenticating(false);
+    `);
 
-      if (errors) {
-        setErrorMessage(errors[0].message);
-        return;
-      }
+    const { errors, data } = response;
+    setIsAuthenticating(false);
 
-      const { token } = data.login;
-      setToken(token);
-      localStorage.setItem('token', token);
-    });
+    if (errors) {
+      setErrorMessage(errors[0].message);
+      return;
+    }
+
+    const { token, userId } = data.login;
+    setTokenAndUserId(token, userId);
+    localStorage.setItem('token', token);
+    localStorage.setItem('userId', userId);
   };
 
   return (
@@ -76,11 +77,11 @@ const Login = ({ setToken }) => {
             <input type="password" name="password" id="password" placeholder="Password" />
             <label htmlFor="password">Password</label>
           </InputGroup>
-          {!isAuthenticating && <StyledButton type="submit">Login</StyledButton>}
+          <ButtonWithSpinner type="submit" buttonText="Login" isLoading={isAuthenticating} />
         </StyledForm>
         <Message>
           {isAuthenticating ? (
-            <span className="auth">Authenticating</span>
+            <span className="auth">Logging in...</span>
           ) : (
             errorMessage && <span className="error">{errorMessage}</span>
           )}
@@ -90,8 +91,4 @@ const Login = ({ setToken }) => {
   );
 };
 
-export default WithAuth(Login);
-
-Login.propTypes = {
-  setToken: PropTypes.func.isRequired,
-};
+export default Login;

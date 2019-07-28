@@ -1,44 +1,43 @@
 import React from 'react';
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
 
-const LoaderContainer = styled.div`
-  height: ${({ children: { props: fullScreen } }) => (fullScreen ? '100vh' : '100%')};
-  position: ${({ children: { props: fullScreen } }) => (fullScreen ? 'fixed' : 'relative')};
-  top: 0;
-  width: 100vw;
-`;
-
-const StyledLoader = styled.img`
-  @keyframes spin {
-    from {
-      transform: translate(-50%, -50%) rotate(0);
+const EcplipseSpinner = styled.div`
+  @keyframes lds-eclipse {
+    0% {
+      transform: rotate(0deg);
     }
-
-    to {
-      transform: translate(-50%, -50%) rotate(360deg);
+    50% {
+      transform: rotate(180deg);
+    }
+    100% {
+      transform: rotate(360deg);
     }
   }
 
-  animation: spin 0.8s infinite;
-  height: 10rem;
-  left: 50%;
-  position: absolute;
-  top: 50%;
-  width: 10rem;
+  animation: lds-eclipse ${({ speed }) => speed || 0.5}s linear infinite;
+  border-radius: 50%;
+  box-shadow: 0 4px 0 0 ${({ theme }) => theme.colorMain};
+  height: 160px;
+  margin-top: -80px;
+  transform-origin: 80px 82px;
+  width: 160px;
 `;
-const Loader = ({ fullScreen }) => (
+
+const LoaderContainer = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  position: fixed;
+  height: 100vh;
+  top: 0;
+  width: 100vw;
+  z-index: 999999;
+`;
+
+const Loader = () => (
   <LoaderContainer>
-    <StyledLoader fullScreen={fullScreen} src="/img/loader.svg" alt="loading..." />
+    <EcplipseSpinner />
   </LoaderContainer>
 );
 
-export default Loader;
-
-Loader.defaultProps = {
-  fullScreen: true,
-};
-
-Loader.propTypes = {
-  fullScreen: PropTypes.bool,
-};
+export { Loader as default, EcplipseSpinner };

@@ -5,13 +5,20 @@ import Loader from '../components/Loader';
 
 const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
+  const [userId, setUserId] = useState(null);
   const [isAuthenticating, setisAuthenticating] = useState(true);
+
+  const setTokenAndUserId = (tokenToStore, userIdToStore) => {
+    setToken(tokenToStore);
+    setUserId(userIdToStore);
+  };
 
   useEffect(() => {
     const localStorageToken = localStorage.getItem('token');
+    const localStorageUserId = localStorage.getItem('userId');
 
-    if (localStorageToken) {
-      setToken(localStorageToken);
+    if (localStorageToken && localStorageUserId) {
+      setTokenAndUserId(localStorageToken, localStorageUserId);
     }
 
     setisAuthenticating(false);
@@ -25,8 +32,10 @@ const AuthProvider = ({ children }) => {
     <authContext.Provider
       value={{
         token,
-        setToken,
+        userId,
+        setTokenAndUserId,
         isAuthenticating,
+        isAuthenticated: token && userId,
       }}
     >
       {children}
