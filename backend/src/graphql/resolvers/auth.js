@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const User = require('../../models/user');
+const checkAuth = require('../../utils/checkAuth');
 
 const query = {
   login: async ({ email, password }) => {
@@ -16,7 +16,7 @@ const query = {
       throw new Error('Invalid email or password.');
     }
 
-    const token = jwt.sign({ userId: user.id, email }, process.env.JWT_SECRET);
+    const { token } = await user.generateToken();
 
     return { userId: user.id, token };
   },
@@ -24,6 +24,13 @@ const query = {
 
 const mutation = {
   createUser: ({ userInput }) => new User(userInput).save(),
+  logout: async (args, { isAuth, token, userId }) => {
+    checkAuth(isAuth);
+
+    const { nModified } = await User.updateOne({ _id: userId }, { $pull: { tokens: token } });
+
+    return { result: !!nModified };
+  },
 };
 
 module.exports = {
