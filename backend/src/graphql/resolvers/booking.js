@@ -14,7 +14,8 @@ const query = {
     const bookingsWithCompleteData = bookings.map(async (booking) => {
       const user = await userLoader.load(booking.user.toString());
       const event = await eventLoader.load(booking.event.toString());
-      return { ...booking._doc, user, event };
+      const creator = await userLoader.load(event.creator.toString());
+      return { ...booking._doc, user, event: { ...event._doc, creator } };
     });
 
     return Promise.all(bookingsWithCompleteData);
@@ -25,14 +26,24 @@ const mutations = {
   bookEvent: async ({ eventId }, { isAuth, userId }) => {
     checkAuth(isAuth);
     const event = await Event.findById(eventId);
+    const bookedEvent = await Booking.findOne({ event: eventId });
+
+    if (bookedEvent) {
+      throw new Error('Event already booked!');
+    }
+
     if (!event) {
       throw new Error('Event not found');
     }
 
-    return new Booking({
+    const booking = await new Booking({
       user: userId,
       event: event._id,
     }).save();
+
+    const user = await userLoader.load(userId);
+
+    return { ...booking._doc, user };
   },
   cancelBooking: async ({ bookingId }, { isAuth }) => {
     checkAuth(isAuth);

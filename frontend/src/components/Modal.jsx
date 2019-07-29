@@ -31,10 +31,6 @@ const ModalStyle = createGlobalStyle`
     &--after-open {
       opacity: 1;
     }
-
-    &--before-close {
-      opacity: 0;
-    }
   }`;
 
 const Modal = ({ children, title, ...props }) => (
@@ -47,7 +43,6 @@ const Modal = ({ children, title, ...props }) => (
         afterOpen: 'modal-overlay--after-open',
         beforeClose: 'modal-overlay--before-close',
       }}
-      closeTimeoutMS={300}
       {...props}
     >
       <div>

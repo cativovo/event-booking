@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
 import authContext from '../context/authContext';
+import query from '../utils/query';
 
 const StyledNav = styled.nav`
   align-items: center;
@@ -67,7 +68,7 @@ const StyledNav = styled.nav`
 `;
 
 const MainNav = () => {
-  const { setTokenAndUserId, isAuthenticated } = useContext(authContext);
+  const { setTokenAndUserId, isAuthenticated, token } = useContext(authContext);
 
   return (
     <StyledNav>
@@ -83,6 +84,18 @@ const MainNav = () => {
               setTokenAndUserId(null, null);
               localStorage.removeItem('token');
               localStorage.removeItem('userId');
+
+              query(
+                `
+                mutation {
+                  logout {
+                    result
+                  }
+                }
+              `,
+                undefined,
+                token,
+              );
             }}
           >
             Logout

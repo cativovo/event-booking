@@ -1,9 +1,15 @@
-const query = (fields, token) => {
-  const body = JSON.stringify({
+const query = (fields, variables, token) => {
+  const graphqlQuery = {
     query: `
             ${fields}
     `,
-  });
+  };
+
+  if (variables) {
+    graphqlQuery.variables = variables;
+  }
+
+  const body = JSON.stringify(graphqlQuery);
 
   const headers = {
     'Content-Type': 'application/json',

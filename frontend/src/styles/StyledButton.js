@@ -41,17 +41,20 @@ const StyledButton = styled.button`
 
   &:hover {
     background-color: ${({ theme, danger, primary }) => {
-    const saturatePercentage = 0.1;
+    const saturatePercentage = 0.15;
+    const lightenPercentage = 0.01;
+
+    const transformColor = color => saturate(saturatePercentage, lighten(lightenPercentage, color));
 
     if (danger) {
-      return saturate(saturatePercentage, theme.colorDanger);
+      return transformColor(theme.colorDanger);
     }
 
     if (primary) {
-      return saturate(saturatePercentage, theme.colorTertiary);
+      return transformColor(theme.colorTertiary);
     }
 
-    return saturate(saturatePercentage, theme.logoBackground);
+    return transformColor(theme.logoBackground);
   }};
   }
 `;
