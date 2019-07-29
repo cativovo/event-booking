@@ -1,18 +1,23 @@
+const DataLoader = require('dataloader');
 const Booking = require('../../models/booking');
+const User = require('../../models/user');
 const Event = require('../../models/event');
 const checkAuth = require('../../utils/checkAuth');
 
+const userLoader = new DataLoader(ids => User.find({ _id: { $in: ids } }));
+const eventLoader = new DataLoader(ids => Event.find({ _id: { $in: ids } }));
+
 const query = {
-  bookings: (args, { isAuth }) => {
+  bookings: async (args, { isAuth, userId }) => {
     checkAuth(isAuth);
-    return Booking.find()
-      .populate({
-        path: 'event',
-        populate: {
-          path: 'creator',
-        },
-      })
-      .populate('user');
+    const bookings = await Booking.find({ user: userId });
+    const bookingsWithCompleteData = bookings.map(async (booking) => {
+      const user = await userLoader.load(booking.user.toString());
+      const event = await eventLoader.load(booking.event.toString());
+      return { ...booking._doc, user, event };
+    });
+
+    return Promise.all(bookingsWithCompleteData);
   },
 };
 
@@ -31,14 +36,12 @@ const mutations = {
   },
   cancelBooking: async ({ bookingId }, { isAuth }) => {
     checkAuth(isAuth);
-    const { event } = await Booking.findOneAndDelete({ _id: bookingId }).populate({
-      path: 'event',
-      populate: {
-        path: 'creator',
-      },
-    });
+    const booking = await Booking.findOneAndDelete({ _id: bookingId });
+    const event = await eventLoader.load(booking.event.toString());
+    const user = await userLoader.load(booking.user.toString());
+    event.creator = user;
 
-    return event;
+    return { ...event._doc };
   },
 };
 

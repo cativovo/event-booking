@@ -10,7 +10,7 @@ const query = {
   events: async () => {
     const events = await Event.find();
 
-    const eventsWithCreators = events.map(async (event) => {
+    const eventsCompleteData = events.map(async (event) => {
       const creator = await userLoader.load(event.creator.toString());
       const createdEvents = await eventLoader.loadMany(creator.createdEvents);
       creator.createdEvents = createdEvents;
@@ -18,7 +18,7 @@ const query = {
       return { ...event._doc, creator };
     });
 
-    return Promise.all(eventsWithCreators);
+    return Promise.all(eventsCompleteData);
   },
 };
 

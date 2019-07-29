@@ -43,8 +43,11 @@ userSchema.pre('save', async function hashPassword() {
 
 userSchema.post('save', (user) => {
   user.password = null;
-  [user.token] = user.tokens;
-  user.userId = user._id;
+
+  if (user.tokens) {
+    [user.token] = user.tokens;
+    user.userId = user._id;
+  }
 });
 
 // will only be called if there's an error in saving the user
